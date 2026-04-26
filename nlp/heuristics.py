@@ -1,40 +1,30 @@
-import spacy
+import re
 from typing import List
 from ingestion.models import Review
 
-# Load spaCy model
-try:
-    nlp = spacy.load("en_core_web_sm")
-except:
-    import os
-    os.system("python -m spacy download en_core_web_sm")
-    nlp = spacy.load("en_core_web_sm")
-
 def is_substantive(text: str) -> bool:
     """
-    Heuristic to check if a review has substance.
-    Must have at least one Noun and one Verb/Adjective.
+    Lightweight heuristic to check if a review has substance.
+    Uses word count and diversity instead of heavy POS tagging.
     """
-    if not text or len(text.split()) < 4:
+    if not text:
         return False
         
-    doc = nlp(text)
+    words = text.split()
+    if len(words) < 5:
+        return False
+        
+    # Diversity check: ensure it's not just "good good good good"
+    unique_words = set([w.lower() for w in words])
+    diversity = len(unique_words) / len(words)
     
-    has_noun = any(token.pos_ in ["NOUN", "PROPN"] for token in doc)
-    has_action_or_desc = any(token.pos_ in ["VERB", "ADJ"] for token in doc)
-    
-    # Word diversity check (unique words / total words)
-    words = [t.text.lower() for t in doc if not t.is_punct]
-    if not words: return False
-    diversity = len(set(words)) / len(words)
-    
-    return has_noun and has_action_or_desc and (diversity > 0.5)
+    return diversity > 0.6
 
 def filter_by_heuristics(reviews: List[Review]) -> List[Review]:
     """
     Filter out reviews that lack semantic substance.
     """
-    print(f"Applying Heuristic Filter to {len(reviews)} reviews...")
+    print(f"Applying Lightweight Heuristic Filter...")
     filtered = [r for r in reviews if is_substantive(r.body)]
-    print(f"Heuristic Filter: {len(reviews)} -> {len(filtered)} (Removed {len(reviews) - len(filtered)} low-substance reviews)")
+    print(f"Filter Results: {len(reviews)} -> {len(filtered)}")
     return filtered

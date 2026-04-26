@@ -2,12 +2,6 @@ google-generativeai
 groq
 pydantic
 pyyaml
-pandas
-scikit-learn
-umap-learn
-hdbscan
-spacy
-langdetect
 jinja2
 python-dotenv
 fastapi
@@ -17,5 +11,6 @@ emoji
 google-play-scraper
 app-store-scraper
 requests
-urllib3==1.26.15
+urllib3<2.0.0
 six
+langdetect
