@@ -15,4 +15,4 @@ class Review(BaseModel):
     pii_redacted: bool = False
 
     class Config:
-        orm_mode = True
+        from_attributes = True
