@@ -1,40 +1,46 @@
-import umap
-import hdbscan
-import numpy as np
-from typing import List, Tuple
+import os
+import google.generativeai as genai
+import json
+from typing import List, Dict
+from ingestion.models import Review
 
-def cluster_embeddings(
-    embeddings: List[List[float]], 
-    umap_params: dict, 
-    hdbscan_params: dict
-) -> np.ndarray:
+def cluster_embeddings(reviews: List[Review], *args, **kwargs) -> List[int]:
     """
-    Perform UMAP dimensionality reduction followed by HDBSCAN clustering.
-    Returns an array of cluster labels.
+    Replaced local HDBSCAN with Gemini-based semantic grouping to save bundle size.
+    Returns a list of 'labels' (0, 1, 2...) for each review.
     """
-    if not embeddings:
-        return np.array([])
+    if len(reviews) < 3:
+        return [0] * len(reviews)
+
+    api_key = os.getenv("GOOGLE_API_KEY")
+    genai.configure(api_key=api_key)
+    model = genai.GenerativeModel('gemini-1.5-flash')
+
+    # Prepare a list for Gemini to group
+    review_data = [{"id": i, "text": f"{r.title}: {r.body}"[:200]} for i, r in enumerate(reviews)]
+    
+    prompt = f"""
+    Group these app reviews into 3-5 distinct semantic clusters. 
+    Return ONLY a JSON mapping of cluster_id (int) to a list of review_ids (int).
+    Reviews: {json.dumps(review_data)}
+    """
+
+    try:
+        response = model.generate_content(prompt)
+        # Extract JSON from response
+        raw_text = response.text.strip()
+        if "```json" in raw_text:
+            raw_text = raw_text.split("```json")[1].split("```")[0]
         
-    data = np.array(embeddings)
-    
-    # 1. UMAP reduction
-    print(f"Reducing dimensions with UMAP (n_neighbors={umap_params['n_neighbors']})...")
-    reducer = umap.UMAP(
-        n_neighbors=umap_params['n_neighbors'],
-        min_dist=umap_params['min_dist'],
-        metric=umap_params['metric'],
-        n_components=2, # Reduce to 2D for clustering
-        random_state=42
-    )
-    u_embeddings = reducer.fit_transform(data)
-    
-    # 2. HDBSCAN clustering
-    print(f"Clustering with HDBSCAN (min_cluster_size={hdbscan_params['min_cluster_size']})...")
-    clusterer = hdbscan.HDBSCAN(
-        min_cluster_size=hdbscan_params['min_cluster_size'],
-        min_samples=hdbscan_params['min_samples'],
-        prediction_data=True
-    )
-    labels = clusterer.fit_predict(u_embeddings)
-    
-    return labels
+        clusters = json.loads(raw_text)
+        
+        # Convert mapping back to label list
+        labels = [-1] * len(reviews)
+        for cluster_id, review_ids in clusters.items():
+            for rid in review_ids:
+                if rid < len(labels):
+                    labels[rid] = int(cluster_id)
+        return labels
+    except Exception as e:
+        print(f"Clustering fallback: {e}")
+        return [0] * len(reviews)
