@@ -1,0 +1,31 @@
+ingestion:
+  window_weeks: 10
+  max_reviews_per_product: 2000
+
+nlp:
+  embedding_model: models/text-embedding-004
+  umap:
+    n_neighbors: 15
+    min_dist: 0.0
+    metric: cosine
+  hdbscan:
+    min_cluster_size: 5
+    min_samples: 3
+  llm:
+    primary_model: "llama-3.1-70b-versatile"
+    fallback_model: "llama-3.3-70b-versatile"
+    max_output_tokens: 1024
+    reviews_per_cluster: 40
+  quote_fuzzy_threshold: 85
+
+delivery:
+  google_docs:
+    enabled: true
+    mcp:
+      command: ["npx"]
+      args: ["-y", "@modelcontextprotocol/server-google-drive", "docs"]
+  gmail:
+    enabled: true
+    mcp:
+      command: ["npx"]
+      args: ["-y", "@modelcontextprotocol/server-google-drive", "gmail"]

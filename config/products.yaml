@@ -1,0 +1,21 @@
+products:
+  - name: Groww
+    appstore_id: "1404871634"
+    playstore_id: "com.nextbillion.groww"
+    google_doc_id: "PLACEHOLDER_GROWW_DOC_ID"
+    recipients:
+      - product-team@example.com
+      - leadership@example.com
+
+  - name: INDMoney
+    appstore_id: "1434523579"
+    playstore_id: "com.indiagold.indmoney"
+    google_doc_id: "PLACEHOLDER_INDMONEY_DOC_ID"
+    recipients:
+      - support@example.com
+
+mcp_servers:
+  docs:
+    command: ["node", "path/to/google-docs-mcp/index.js"]
+  gmail:
+    command: ["node", "path/to/gmail-mcp/index.js"]
