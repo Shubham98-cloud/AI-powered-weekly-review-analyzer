@@ -14,9 +14,8 @@ fastapi
 uvicorn
 mcp
 emoji
-
 google-play-scraper
 app-store-scraper
-
 requests
-urllib3<2.0.0
+urllib3==1.26.15
+six
