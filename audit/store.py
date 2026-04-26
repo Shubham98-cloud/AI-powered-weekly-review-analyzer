@@ -3,7 +3,11 @@ import os
 from datetime import datetime
 
 class AuditStore:
-    def __init__(self, db_path: str = "run_log.db"):
+    def __init__(self, db_path: str = None):
+        # Use RAILWAY_VOLUME_MOUNT_PATH if available for persistent storage
+        if not db_path:
+            base_dir = os.getenv("RAILWAY_VOLUME_MOUNT_PATH", ".")
+            db_path = os.path.join(base_dir, "run_log.db")
         self.db_path = db_path
         self._init_db()
 

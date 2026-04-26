@@ -2,6 +2,10 @@ google-generativeai
 groq
 pydantic
 pyyaml
+pandas
+scikit-learn
+umap-learn
+hdbscan
 spacy
 langdetect
 jinja2
