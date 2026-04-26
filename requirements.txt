@@ -14,3 +14,6 @@ fastapi
 uvicorn
 mcp
 emoji
+
+google-play-scraper
+app-store-scraper
